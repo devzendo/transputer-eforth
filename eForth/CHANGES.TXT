@@ -1,0 +1,8 @@
+
+1. changed symbol ERR (value 27) to name ESC to avoid assembly warning
+		with TASM.
+
+2. changed word name STR to STRN to avoid assembly warning using TASM.
+
+
+
