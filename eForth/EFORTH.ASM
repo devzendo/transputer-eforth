@@ -120,15 +120,15 @@ ORG	_CODE					;;restore code pointer
 $COLON	MACRO	LEX,NAME,LABEL
 	$CODE	LEX,NAME,LABEL
 	align	4
-	db	048h		;; ldc x	point to dd dolst
+	db	048h		;; ldc x	point to dd DOLST
 	db	021h,0fbh	;; ldpi 	make prg rel -> absolute
 	db	025h,0fah	;; dupx 	second copy
-	db	084h		;; adcx 4	point past the 'dd dolst'
+	db	084h		;; adcx 4	point past the 'dd DOLST'
 	db	0f0h		;; rev		put incremented pointer under
 	db	030h		;; ldnl 0	fetch the pointer
 	db	0f6h		;; gcall	jump to it
 	db	0,0,0
-	dd	dolst
+	dd	DOLST
 	ENDM
 
 ;	Compile a user variable header.
@@ -136,15 +136,15 @@ $COLON	MACRO	LEX,NAME,LABEL
 $USER	MACRO	LEX,NAME,LABEL
 	$CODE	LEX,NAME,LABEL
 	align	4
-	db	048h		;; ldc 8	point to dd dolst
+	db	048h		;; ldc 8	point to dd DOLST
 	db	021h,0fbh	;; ldpi 	make prg rel -> absolute
 	db	025h,0fah	;; dupx 	second copy
-	db	084h		;; adcx 4	point past the 'dd dolst'
+	db	084h		;; adcx 4	point past the 'dd DOLST'
 	db	0f0h		;; rev		put incremented pointer under
 	db	030h		;; ldnl 0	fetch the pointer
 	db	0f6h		;; gcall	jump to it
 	db	0,0,0
-	dd	dolst
+	dd	DOLST
 	DD	DOUSE,_USER			;;followed by doUSER and offset
 	_USER	= _USER+CELLL			;;update user area offset
 	ENDM
@@ -442,7 +442,7 @@ temp1	equ	urdcode
 
 ;	jump to cold start
 ;	first make a pointer to the code
-%nolist
+.NOLIST
 	if1
 	db	0,0,0,0,0,0,0,0 ; leave space during pass 1 of assembly
 	else		; generate code during pass 2 (label now known)
@@ -455,7 +455,7 @@ temp1	equ	urdcode
 	prfx	cold shr  4
 	ldc	cold
 	endif
-%list
+.LIST
 	gcall			; jump to it
 
 
@@ -2178,7 +2178,7 @@ TICK1:		DD	THROW			;no, error
 ;   FOR 	( -- a )
 ;		Start a FOR-NEXT loop structure in a colon definition.
 
-		$COLON	IMEDD+3,'FOR',FOR
+		$COLON	IMEDD+3,'FOR',FOR_
 		DD	COMPI,TOR,HERE,EXIT
 
 ;   BEGIN	( -- a )
@@ -2245,7 +2245,7 @@ TICK1:		DD	THROW			;no, error
 ;   WHILE	( a -- A a )
 ;		Conditional branch out of a BEGIN-WHILE-REPEAT loop.
 
-		$COLON	IMEDD+5,'WHILE',WHILE
+		$COLON	IMEDD+5,'WHILE',WHILE_
 		DD	IFF,SWAP,EXIT
 
 ;   ABORT"      ( -- ; <string> )
