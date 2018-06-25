@@ -3,6 +3,8 @@ syntax: glob
 *.iml
 .idea
 .idea/
+eForth/*.BIN
+eForth/*.LST
+eForth/MASM/*.OBJ
 syntax: regexp
 ^target$
-
