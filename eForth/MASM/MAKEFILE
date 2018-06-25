@@ -1,0 +1,7 @@
+# An experimental build using MASM
+EFORTH.OBJ: ..\EFORTH.ASM
+	ML /Sa /c /Zm /FoEFORTH.OBJ /FlEFORTH.LST ..\EFORTH.ASM
+
+clean:
+	del /Q *.OBJ *.LST
+
