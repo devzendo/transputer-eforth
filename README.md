@@ -1,8 +1,8 @@
 transputer-eforth
 =================
 This repository contains eForth, ported to the Transputer by Bob Barr, with
-further changes to port it to the <a href="https://devzendo.github.io/parachute/">Parachute project's</a> Transputer emulator by
-Matt Gumbley.
+further changes to port it to the <a href="https://devzendo.github.io/parachute/">Parachute project's</a>
+Transputer emulator by Matt Gumbley.
 
 
 The original version of this is contained in the eforth-transputer.zip file,
@@ -58,6 +58,33 @@ project's Transputer emulator.
 This porting is also in the public domain.
 
 Please see the <a href="https://devzendo.github.io/parachute/">DevZendo.org Parachute Project</a> for more information.
+
+There are several pre-built releases of eForth in the 'releases' directory. These may be run directly on the
+Transputer emulator: see 'Running Parachute eForth', below.
+
+Should you want to build from source, see 'Building Parachute eForth', below.
+
+
+Building Parachute eForth
+-------------------------
+To build, you'll need the <a href="https://bitbucket.org/devzendo/transputer-macro-assembler">DevZendo.org
+Transputer Macro Assembler</a> installed on your system and available on the PATH. See that page for
+download/installation instructions.
+
+You'll also need a reasonable version of Make. I use GNU Make 3.81 on OSX via MacPorts.
+
+Once installed, cd to the 'eForth' directory, and run 'make'.
+
+This will yield EFORTH.BIN (and EFORTH.LST). The .BIN file is a binary image that you can use to boot the Parachute
+Transputer Emulator with.
+
+
+Running Parachute eForth
+------------------------
+To run, you'll need the <a href="https://bitbucket.org/devzendo/transputer-emulator">Parachute Transputer Emulator</a>
+installed on your system and available on the PATH. See that page for download/installation instructions.
+
+... instructions to be completed ....
 
 
 License

@@ -50,12 +50,16 @@ PAGE 60,132	;60 lines per page, 132 characters per line ( was 62,132 )
 ;		Scotts Valley, CA  95066
 ;		(408) 438-1887
 ;
+;   Implementation for Parachute Transputer Emulator by:
+;       Matt Gumbley
+;       matt.gumbley@devzendo.org
+;
 ;===============================================================
 
 ;; Version control
 
 VER		EQU	01H			;major release version
-EXT		EQU	01H			;minor extension
+EXT		EQU	02H			;minor extension
 
 ;; Constants
 
