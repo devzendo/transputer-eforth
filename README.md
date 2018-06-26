@@ -2,9 +2,21 @@ transputer-eforth
 =================
 This repository contains eForth, ported to the Transputer by Bob Barr, with
 further changes to port it to the <a href="https://devzendo.github.io/parachute/">Parachute project's</a>
-Transputer emulator by Matt Gumbley.
+Transputer emulator.
+
+This port (PD) 2018 Matt J. Gumbley
+matt.gumbley@devzendo.org
+@mattgumbley @devzendo
+http://devzendo.github.io/parachute
 
 
+Status
+------
+In progress, June 2018. Awaiting modernisation/release of the Transputer emulator.
+
+
+Original works
+--------------
 The original version of this is contained in the eforth-transputer.zip file,
 which was located via the Internet Archive's Wayback Machine at 
 ```
