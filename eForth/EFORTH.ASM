@@ -1,7 +1,7 @@
 TITLE InMos Transputer 32-bit eForth
 
 PAGE 60,132	;60 lines per page, 132 characters per line ( was 62,132 )
-.386		; allow 32-bit equ values
+.T800	; allow 32-bit equ values
 
 ;===============================================================
 ;
