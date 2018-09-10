@@ -577,61 +577,61 @@ rx1:
 		prfx	1
 		ldc	0ah		; reset mode ptr,disable rx/tx
 		ldl	uart
-		stnl	CRA		; write to CRA reg
+		stnl	cra		; write to CRA reg
 
 		uwait			; kill time between writes
 
 		prfx	2
 		ldc	0ah		; reset receiver
 		ldl	uart
-		stnl	CRA
+		stnl	cra
 
 		uwait			; kill time between writes
 
 		prfx	3
 		ldc	0ah		; reset transmitter
 		ldl	uart
-		stnl	CRA
+		stnl	cra
 
 		uwait			; kill time between writes
 
 		prfx	4
 		ldc	0ah		; reset error ststus
 		ldl	uart
-		stnl	CRA
+		stnl	cra
 
 		uwait			; kill time between writes
 
 		prfx	5
 		ldc	0ah		; reset break change
 		ldl	uart
-		stnl	CRA
+		stnl	cra
 
 		uwait			; kill time between writes
 
 		prfx	1
 		ldc	03		; no parity,8 data bits to MR1A
 		ldl	uart
-		stnl	MR1A
+		stnl	mr1a
 
 		uwait			; kill time between writes
 
 		ldc	7		; normal mode, 1 stop bit to MR2A
 		ldl	uart
-		stnl	MR2A
+		stnl	mr2a
 
 		uwait			; kill time between writes
 
 		prfx	0bh
 		ldc	0bh		; tx and rx clock to 9600 baud to CSRA
 		ldl	uart
-		stnl	CSRA
+		stnl	csra
 
 		uwait			; kill time between writes
 
 		ldc	5		; enable rx and tx to CRA
 		ldl	uart
-		stnl	CRA
+		stnl	cra
 		$NEXT
 
 
@@ -2339,10 +2339,10 @@ SCOM3:		DD	THROW			;error
 		$COLON	5,'call,',CALLC
 ;		 DD	 DOLIT,CALLL,COMMA,HERE  ;Direct Threaded Code
 ;		 DD	 CELLP,SUBB,COMMA	 ;DTC 8086 relative call
-		dd	dolit,entry1,comma	; transputer abs call
-		dd	dolit,entry2,comma
-		dd	dolit,entry3,comma
-		dd	comma			; compile in the target addr
+		dd	DOLIT,entry1,COMMA	; transputer abs call
+		dd	DOLIT,entry2,COMMA
+		dd	DOLIT,entry3,COMMA
+		dd	COMMA			; compile in the target addr
 		DD	EXIT
 
 ;   :		( -- ; <string> )
