@@ -1,4 +1,3 @@
-syntax: glob
 .DS_Store
 *.iml
 .idea
@@ -6,5 +5,4 @@ syntax: glob
 eForth/*.BIN
 eForth/*.LST
 eForth/MASM/*.OBJ
-syntax: regexp
-^target$
+target
