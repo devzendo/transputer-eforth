@@ -203,16 +203,8 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-ldc	macro	val		; load constant opcode
-	db	040h or (val and 00fh)
-	endm
-
 adcx	macro	val		; add constant opcode
 	db	080h or (val and 00fh)
-	endm
-
-ldl	macro	val		; load local opcode
-	db	070h or (val and 00fh)
 	endm
 
 ldnl	macro	val		; load non-local opcode
@@ -343,24 +335,10 @@ ORIG:
 	db	027h,0fbh	; disable lo-pri timer  ( timerdisablel )
 
 ;	set initial return stack pointer
-	prfx	RPP shr 28
-	prfx	RPP shr 24
-	prfx	RPP shr 20
-	prfx	RPP shr 16
-	prfx	RPP shr 12
-	prfx	RPP shr  8
-	prfx	RPP shr  4
 	ldc	RPP
 	stl	rp
 
 ;	set initial data stack pointer
-	prfx	SPP shr 28
-	prfx	SPP shr 24
-	prfx	SPP shr 20
-	prfx	SPP shr 16
-	prfx	SPP shr 12
-	prfx	SPP shr  8
-	prfx	SPP shr  4
 	ldc	SPP
 	stl	spx
 
