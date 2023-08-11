@@ -176,22 +176,18 @@ entry1	equ	025fb2148h	; for direct threading
 entry2	equ	030f084fah
 entry3	equ	0000000f6h
 
+; IServer I/O frames and link 0 addresses
 
-uartbase	equ	28000000h
-
-mr1a	equ	00h
-mr2a	equ	00h
-csra	equ	01h
-cra	equ	02h
-ustat	equ	04h		; byte offset for status reg
-dataout equ	0ch		; byte offset for data out reg
-datain	equ	0ch		; byte offset for data in  reg
-charin	equ	01h		; status bit for char ready
-
+REQ_POLLKEY     EQU 31
+REQ_EXIT		EQU 35
+REQ_PUTCHAR     EQU 90
+STDOUT_STREAMID EQU 0x01
+LINK0_OUTPUT    EQU 0x80000000
+LINK0_INPUT     EQU 0x80000010
 
 ; workspace allocation
-uread	equ	01h		; loc reg containing read routine addr
-uart	equ	02h		; loc reg containimg uart base address
+inbyte	equ	01h		; single byte responses from the IServer are read here
+free2	equ	02h		; not used for anything now
 
 ; Forth pointers
 w	equ	04h
@@ -306,7 +302,7 @@ mint	macro			; generate minimum integer opcode
 	db	024h,0f2h
 	endm
 
-uwait	macro			; kill a little time during uart init
+uwait	macro			; kill a little time
 	db	023h,0ffh
 	db	023h,0ffh	; 2 wcnt operations (slow no-ops)
 	endm
@@ -346,43 +342,6 @@ ORIG:
 	db	027h,0fah	; disable hi-pri timer  ( timerdisableh )
 	db	027h,0fbh	; disable lo-pri timer  ( timerdisablel )
 
-;	make a pointer to the uart read code in ROM
-temp1	equ	urdcode
-	if1		; leave space during pass 1 of assembly
-	db	0,0,0,0,0,0,0,0
-	else		; generate code during pass 2 (label now known)
-	prfx	temp1 shr 28
-	prfx	temp1 shr 24
-	prfx	temp1 shr 20
-	prfx	temp1 shr 16
-	prfx	temp1 shr 12
-	prfx	temp1 shr  8
-	prfx	temp1 shr  4
-	ldc	temp1
-	endif
-;
-; copy the uart read routine to Transputer internal RAM for execution
-	mint			;			mint	urd>	--
-	prfx	0fh
-	prfx	0fh
-	ldc	0		; dest is 80000ff0	ff0	mint	urd>
-	orx			;			dest	urd>	--
-	dupx			;			dest	dest	urd>
-	stl	uread		; set local pointer	dest	urd>	--
-	ldc	15		; move 15 bytes 	15	dest	urd>
-	move			; do the move
-
-;	set the UART base address
-	prfx	uartbase shr 28
-	prfx	uartbase shr 24
-	prfx	uartbase shr 20
-	prfx	uartbase shr 16
-	prfx	uartbase shr 12
-	prfx	uartbase shr  8
-	prfx	uartbase shr  4
-	ldc	uartbase
-	stl	uart
-
 ;	set initial return stack pointer
 	prfx	RPP shr 28
 	prfx	RPP shr 24
@@ -406,21 +365,7 @@ temp1	equ	urdcode
 	stl	spx
 
 ;	jump to cold start
-;	first make a pointer to the code
-.NOLIST
-	if1
-	db	0,0,0,0,0,0,0,0 ; leave space during pass 1 of assembly
-	else		; generate code during pass 2 (label now known)
-	prfx	cold shr 28
-	prfx	cold shr 24
-	prfx	cold shr 20
-	prfx	cold shr 16
-	prfx	cold shr 12
-	prfx	cold shr  8
-	prfx	cold shr  4
-	ldc	cold
-	endif
-.LIST
+	ldc	COLD
 	gcall			; jump to it
 
 
@@ -463,72 +408,78 @@ ORG	CODEE					;start code dictionary
 ;; Device dependent I/O
 
 ;   BYE 	( -- )
-;		Exit eForth.
-; Since there is no O.S. to exit to, BYE is not implemented.
-; It could be implemented as shown to just restart eForth.
+;		Exit eForth. 
 ;
-;		$CODE	3,'BYE',BYE
-;		db	027h,02fh,02fh,02fh	; ldc with restart address
-;		db	02fh,02fh,02fh,04eh	; .. of 7ffffffeh
-;		gcall				; jump to it
-;
+		$CODE	3,'BYE',BYE
+;		Terminate the IServer with a success exit code...
+		ldc     LINK0_OUTPUT        ; (link0)
+        ldc     REQ_EXIT            ; (req_exit link0)
+        outbyte                     ; ()
+		ldc     LINK0_OUTPUT        ; (link0)
+		ldc		0					; (success link0)
+		outword
 
-; UART read and wait routines - strange but necessary
-; ( rtn uart-reg-offset -- val rtn )
+;       Read IServer response
+		ldlp    inbyte              ; (&inbyte)
+		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     1                   ; (len=1 link0 &inbyte)
+		in
 
-		$CODE	3,'URD',urdcode
-		rev			;  tuck return addr under reg: uart-reg-offset rtn
-		ldl  uart		;  get uart base address: uart-base uart-reg-offset rtn
-		db	025h,0f2h	;  add to desired register   ( sum ) : uart-reg-addr rtn
-		ldnl  0 		;  read the uart: uart-reg-contents rtn
-		rev			;  put rtn back on top: rtn uart-reg-contents
-		gcall			;  return to caller
-
+;		Terminate Emulator.
+		terminate
 
 
 ;   ?RX 	( -- c T | F )
 ;		Return input character and true, or a false if no input.
 
 		$CODE	3,'?RX',QRX
-		ldc	ustat			; status reg offset
-		ldl	uread			; address of read code: @urdcode ustat-reg-offset
-		gcall				; call it to get status
-		;
-		; stl	scratch 		; toss return address - there won't be one?
-		ldc	charin			; check for char in bit
-		andx
-; NOTE: the following relative branch is sensitive to the lengths of
-;		macros pushx and $next plus the code bytes between it
-;		and label rx1. Count carefully!!!!!
-dist	equ	rx1-from1
-		prfx	dist shr 4
-		jzx	dist
+		ldc     LINK0_OUTPUT        ; (link0)
+        ldc     REQ_POLLKEY         ; (req_pollkey link0)
+        outbyte                     ; ()
 
-;		 db	 021h,0a8h		 ; jz to rx1, no char in
+;       Read IServer response
+		ldlp    inbyte              ; (&inbyte)
+		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     1                   ; (len=1 link0 &inbyte)
+		in
+		ldl		inbyte				; (inbyte)
+		jzx		QRX_RDCHR
 
-from1:
-		ldc	datain			; data in reg offset	    1
-		ldl	uread			;			    1
-		gcall				; read the char 	    1
-		stl	scratch 		; toss return address	    1
-		pushx				; char to tos		    6
-		db	060h,04fh		; ldc -1		    2
-		pushx				; true on top of it	    6
-		$NEXT				;			    7
-rx1:
-		ldc	0			; push a false
+;		No character is available, return false.
+		ldc		0					; push a false
 		pushx
 		$NEXT
 
+;		A character is available, read it and return true.
+QRX_RDCHR:
+		ldlp    inbyte              ; (&inbyte)
+		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     1                   ; (len=1 link0 &inbyte)
+		in
+		ldl		inbyte				; (inbyte)
+ 		pushx						; push char to tos
+		ldc		-1
+		pushx						; true on top of it
+		$NEXT
+		
 
 ;   TX! 	( c -- )
-;		Send character c to the output device.
+;		Send character c to the output device (IServer console).
 
 		$CODE	3,'TX!',TXSTO
-		popx			; get the char
-		ldl	uart		; get uart base address
-		adcx	dataout
-		sb			; store the byte to write it
+		ldc     LINK0_OUTPUT        ; (link0)
+        ldc     REQ_PUTCHAR         ; (req_putchar link0)
+        outbyte                     ; ()
+		ldc     LINK0_OUTPUT        ; (link0)
+		popx			            ; get the char (char link0)
+        outbyte                     ; ()
+
+;       Read (and ignore) IServer response
+		ldlp    inbyte              ; (&inbyte)
+		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     1                   ; (len=1 link0 &inbyte)
+		in
+
 		$NEXT
 
 
@@ -536,64 +487,7 @@ rx1:
 ;		Initialize the serial I/O devices.
 
 		$CODE	3,'!IO',STOIO
-		prfx	1
-		ldc	0ah		; reset mode ptr,disable rx/tx
-		ldl	uart
-		stnl	cra		; write to CRA reg
-
 		uwait			; kill time between writes
-
-		prfx	2
-		ldc	0ah		; reset receiver
-		ldl	uart
-		stnl	cra
-
-		uwait			; kill time between writes
-
-		prfx	3
-		ldc	0ah		; reset transmitter
-		ldl	uart
-		stnl	cra
-
-		uwait			; kill time between writes
-
-		prfx	4
-		ldc	0ah		; reset error ststus
-		ldl	uart
-		stnl	cra
-
-		uwait			; kill time between writes
-
-		prfx	5
-		ldc	0ah		; reset break change
-		ldl	uart
-		stnl	cra
-
-		uwait			; kill time between writes
-
-		prfx	1
-		ldc	03		; no parity,8 data bits to MR1A
-		ldl	uart
-		stnl	mr1a
-
-		uwait			; kill time between writes
-
-		ldc	7		; normal mode, 1 stop bit to MR2A
-		ldl	uart
-		stnl	mr2a
-
-		uwait			; kill time between writes
-
-		prfx	0bh
-		ldc	0bh		; tx and rx clock to 9600 baud to CSRA
-		ldl	uart
-		stnl	csra
-
-		uwait			; kill time between writes
-
-		ldc	5		; enable rx and tx to CRA
-		ldl	uart
-		stnl	cra
 		$NEXT
 
 
