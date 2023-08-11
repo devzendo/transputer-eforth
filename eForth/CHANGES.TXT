@@ -17,3 +17,6 @@ Version 1.2
 * Change the case of some symbols in comments; change the label of some colon definitions that were conflicting with
   reserved words in MASM (FOR and WHILE); correct the %list/%nolist directives.
 * Built binary release with DevZendo.org Transputer Macro Assembler
+* Uses TMASM's bootstrap: removed CPU initialisation as bootstrap does this.
+* Replaced I/O words with IServer versions.
+* Assumes the default Parachute emulator's memory space of 4MB; this is the EM address.

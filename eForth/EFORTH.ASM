@@ -1,7 +1,6 @@
 TITLE InMos Transputer 32-bit eForth
 
 PAGE 60,132	;60 lines per page, 132 characters per line ( was 62,132 )
-.T800	; allow 32-bit equ values
 
 ;===============================================================
 ;
@@ -56,6 +55,10 @@ PAGE 60,132	;60 lines per page, 132 characters per line ( was 62,132 )
 ;
 ;===============================================================
 
+		.TRANSPUTER
+
+        INCLUDE         "boot/bootstrap.asm"
+
 ;; Version control
 
 VER		EQU	01H			;major release version
@@ -81,16 +84,16 @@ CALLL		EQU	0h	; was 0E890H NOP CALL opcodes
 
 ;; Memory allocation	0//code>--//--<name//up>--<sp//tib>--rp//em
 
-EM		EQU	04001FF7cH		;top of memory
-COLDD		EQU	040000000H		;cold start vector
+EM		EQU	0x80400000              ;top of memory (4MB, the default Parachute RAM size)
+COLDD		EQU	Boot2Start	        ;cold start vector
 
 US		EQU	64*CELLL		;user area size in cells
 RTS		EQU	64*CELLL		;return stack/TIB size
 
 RPP		EQU	EM-8*CELLL		;start of return stack (RP0)
-TIBB		EQU	RPP-RTS 		;terminal input buffer (TIB)
-SPP		EQU	TIBB-8*CELLL		;start of data stack (SP0)
-UPP		EQU	EM-256*CELLL		;start of user area (UP0)
+TIBB	        EQU	RPP-RTS 		;terminal input buffer (TIB)
+SPP		EQU	TIBB-8*CELLL	        ;start of data stack (SP0)
+UPP		EQU	EM-256*CELLL	        ;start of user area (UP0)
 NAMEE		EQU	UPP-8*CELLL		;name dictionary
 CODEE		EQU	COLDD+US		;code dictionary
 
@@ -186,7 +189,7 @@ datain	equ	0ch		; byte offset for data in  reg
 charin	equ	01h		; status bit for char ready
 
 
-; local register allocation
+; workspace allocation
 uread	equ	01h		; loc reg containing read routine addr
 uart	equ	02h		; loc reg containimg uart base address
 
@@ -339,51 +342,9 @@ ORIG:
 	db	023h,0fch	; gajw - set workspace pointer
 	mint			; most neg
 	stl	0		; keep it handy
-	ldl	0
-	db	021h,0fch	; clear lo-priority queue	( stlf )
-	ldl	0
-	db	021h,0f8h	; clear hi-priority queue	( sthf )
-	db	025h,0f7h	; clear halt-on-error flag	( clrhalterr )
-	db	022h,0f9h	; clear the error flag		( testerr )
 	db	02bh,0f2h	; clear debug break		( clrj0break )
-	db	027h,0fah	; disable hi-pri timer
-	db	027h,0fbh	; disable lo-pri timer
-;
-; initialize link and event channels off
-;
-	ldl	0
-	ldl	0
-	stnl	0
-	ldl	0
-	ldl	0
-	stnl	1
-	ldl	0
-	ldl	0
-	stnl	2
-	ldl	0
-	ldl	0
-	stnl	3
-	ldl	0
-	ldl	0
-	stnl	4
-	ldl	0
-	ldl	0
-	stnl	5
-	ldl	0
-	ldl	0
-	stnl	6
-	ldl	0
-	ldl	0
-	stnl	7
-	ldl	0
-	ldl	0
-	stnl	8
-	ldl	0
-	ldl	0
-	stnl	9
-	ldl	0
-	ldl	0
-	stnl	10
+	db	027h,0fah	; disable hi-pri timer  ( timerdisableh )
+	db	027h,0fbh	; disable lo-pri timer  ( timerdisablel )
 
 ;	make a pointer to the uart read code in ROM
 temp1	equ	urdcode
@@ -513,14 +474,14 @@ ORG	CODEE					;start code dictionary
 ;
 
 ; UART read and wait routines - strange but necessary
-; ( addr rtn -- val rtn )
+; ( rtn uart-reg-offset -- val rtn )
 
 		$CODE	3,'URD',urdcode
-		rev			;  tuck return addr under reg
-		ldl  uart		;  get uart base address
-		db	025h,0f2h	;  add to desired register   ( sum )
-		ldnl  0 		;  read the uart
-		rev			;  put rtn back on top
+		rev			;  tuck return addr under reg: uart-reg-offset rtn
+		ldl  uart		;  get uart base address: uart-base uart-reg-offset rtn
+		db	025h,0f2h	;  add to desired register   ( sum ) : uart-reg-addr rtn
+		ldnl  0 		;  read the uart: uart-reg-contents rtn
+		rev			;  put rtn back on top: rtn uart-reg-contents
 		gcall			;  return to caller
 
 
@@ -530,9 +491,10 @@ ORG	CODEE					;start code dictionary
 
 		$CODE	3,'?RX',QRX
 		ldc	ustat			; status reg offset
-		ldl	uread			; address of read code
+		ldl	uread			; address of read code: @urdcode ustat-reg-offset
 		gcall				; call it to get status
-		stl	scratch 		; toss return address
+		;
+		; stl	scratch 		; toss return address - there won't be one?
 		ldc	charin			; check for char in bit
 		andx
 ; NOTE: the following relative branch is sensitive to the lengths of
@@ -2561,28 +2523,8 @@ LASTN		EQU	_NAME+4 		;last name address
 NTOP	EQU	_NAME-0 	;next available memory in name dictionary
 CTOP	EQU	$+0		;next available memory in code dictionary
 
-	org	4000ff80h		; vector start from top of rom
-
-	db	27h,2fh,2fh,2fh
-	db	20h,20h,20h,40h 	; from start of rom
-	db	24h,20h,20h,20h
-	db	20h,20h,20h,40h 	; to start of ram
-	db	28h,20h,20h,40h 	; for 32k bytes
-	move				; do the move
-	db	27h,2fh,2fh,2fh
-	db	28h,20h,20h,40h 	; from middle of rom
-	db	24h,20h,20h,21h
-	db	28h,20h,20h,40h 	; to end of ram
-	db	28h,20h,20h,40h 	; for 32k bytes
-	move				; do the move
-	db	24h,20h,20h,20h 	; set for jump
-	db	20h,20h,20h,40h 	; to start of ram
-	gcall				; do the jump
-
-	org	4000fffeh
-	db	67h,00h 		; rel jump back 80h locations
-
 MAIN	ENDS
+Boot2End:
 END	ORIG
 
 ;===============================================================

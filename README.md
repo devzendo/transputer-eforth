@@ -4,15 +4,17 @@ This repository contains eForth, ported to the Transputer by Bob Barr, with
 further changes to port it to the <a href="https://devzendo.github.io/parachute/">Parachute project's</a>
 Transputer emulator.
 
-This port (PD) 2018 Matt J. Gumbley
+This port (PD) 2018-2023 Matt J. Gumbley
 matt.gumbley@devzendo.org
-@mattgumbley @devzendo
+@M0CUV@mastodon.radio
+
 http://devzendo.github.io/parachute
 
 
 Status
 ------
-In progress, June 2018. Awaiting modernisation/release of the Transputer emulator.
+In progress, August 2023. Making into a link-bootable, not ROM-based binary, and modifying I/O
+words to use the Parachute IServer. 
 
 
 Original works
@@ -33,6 +35,12 @@ A more available archive may be found at
 http://www.forth.org/library/eforth_SOC/eforth_SOC_source/eForth1/transpef.zip
 ```
 
+The UltraTechnology/Offete Enterprises page at 
+```
+http://www.ultratechnology.com/offete.html
+```
+lists this eForth as "eForth for Inmos 32-bit transputers. This is an experimental implementation not yet tested on a
+Transputer system. Volunteers are welcome to put this system to the test." - which is what I'm doing with this project!
 
 About eForth
 ------------
@@ -96,8 +104,17 @@ Running Parachute eForth
 To run, you'll need the <a href="https://bitbucket.org/devzendo/transputer-emulator">Parachute Transputer Emulator</a>
 installed on your system and available on the PATH. See that page for download/installation instructions.
 
-... instructions to be completed ....
+Run the emulator in one terminal:
+```
+$ temulate  
+```
 
+Run the IServer in another terminal, serving the EFORTH.BIN file to the emulator:
+```
+$ iserver /opt/parachute/bin/EFORTH.BIN
+eForth v1.2
+ok   
+```
 
 License
 -------
