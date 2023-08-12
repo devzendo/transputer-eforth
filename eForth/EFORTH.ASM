@@ -208,10 +208,6 @@ jzx	macro	val		; jump if zero
 	db	0a0h or (val and 00fh)
 	endm
 
-stl	macro	val		; store local opcode
-	db	0d0h or (val and 00fh)
-	endm
-
 stnl	macro	val		; store non-local opcode
 	db	0e0h or (val and 00fh)
 	endm
