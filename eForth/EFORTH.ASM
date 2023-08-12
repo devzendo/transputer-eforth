@@ -130,8 +130,8 @@ $COLON	MACRO	LEX,NAME,LABEL
 	align	4
 	db	048h		;; ldc x	point to dd DOLST
 	db	021h,0fbh	;; ldpi 	make prg rel -> absolute
-	db	025h,0fah	;; dupx 	second copy
-	db	084h		;; adcx 4	point past the 'dd DOLST'
+	db	025h,0fah	;; dup	 	second copy
+	db	084h		;; adc 4	point past the 'dd DOLST'
 	db	0f0h		;; rev		put incremented pointer under
 	db	030h		;; ldnl 0	fetch the pointer
 	db	0f6h		;; gcall	jump to it
@@ -146,8 +146,8 @@ $USER	MACRO	LEX,NAME,LABEL
 	align	4
 	db	048h		;; ldc 8	point to dd DOLST
 	db	021h,0fbh	;; ldpi 	make prg rel -> absolute
-	db	025h,0fah	;; dupx 	second copy
-	db	084h		;; adcx 4	point past the 'dd DOLST'
+	db	025h,0fah	;; dup	 	second copy
+	db	084h		;; adc 4	point past the 'dd DOLST'
 	db	0f0h		;; rev		put incremented pointer under
 	db	030h		;; ldnl 0	fetch the pointer
 	db	0f6h		;; gcall	jump to it
@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-adcx	macro	val		; add constant opcode
-	db	080h or (val and 00fh)
-	endm
-
 ldnl	macro	val		; load non-local opcode
 	db	030h or (val and 00fh)
 	endm
@@ -244,10 +240,6 @@ notx	macro			; bitwise not opcode
 	db	023h,0f2h
 	endm
 
-dupx	macro			; duplicate A reg value
-	db	025h,0fah
-	endm
-
 move	macro			; transputer block move
 	db	024h,0fah
 	endm
@@ -257,8 +249,8 @@ move	macro			; transputer block move
 ;	relative branches in the assembly code words that use them
 popx	macro			; pop tos to reg A		bytes
 	ldl	spx		;; fetch sp			  1
-	dupx			;; extra copy for fetch 	  2
-	adcx	4		;; bump up 1 level		  1
+	dup			;; extra copy for fetch 	  2
+	adc	4		;; bump up 1 level		  1
 	stl	spx		;; save it			  1
 	ldnl	0		;; get previous tos		  1
 	endm
@@ -306,11 +298,11 @@ uwait	macro			; kill a little time
 ;		in code rely on a 11 byte expansion.
 $NEXT	MACRO				;;			bytes
 	ldl	ip			;; get ip		  1
-	dupx				;;			  2
-	adcx	4			;; bump it one cell	  1
+	dup				;;			  2
+	adc	4			;; bump it one cell	  1
 	stl	ip			;; and save it back	  1
 	ldnl	0			;; get orig (ip)	  1
-	dupx				;; it points to cfa	  2
+	dup				;; it points to cfa	  2
 	stl	w			;; save it		  1
 	ldnl	0			;; get the code address   1
 	gcall				;; and jump to it	  1
@@ -478,8 +470,8 @@ QRX_RDCHR:
 
 		$CODE	COMPO+5,'doLIT',DOLIT
 		ldl	ip			; get ip
-		dupx				; dup it
-		adcx	4			; bump it up 1 cell
+		dup				; dup it
+		adc	4			; bump it up 1 cell
 		stl	ip			; and save it
 		ldnl	0			; get (ip)
 		pushx				; push it to tos
@@ -507,7 +499,7 @@ QRX_RDCHR:
 		ldnl	0			; get (rp)
 		stl	ip			; into ip
 		ldl	rp			; adjust rp up
-		adcx	4			; ..by 1 cell
+		adc	4			; ..by 1 cell
 		stl	rp			;
 		$NEXT
 
@@ -527,7 +519,7 @@ QRX_RDCHR:
 		ldl	rp
 		ldnl	0			; fetch the index
 		db	060h,08fh		; adc -1
-		dupx				; extra copy for test
+		dup				; extra copy for test
 		ldl	rp
 		stnl	0			; and back to (rp)
 		mint				; sign bit set? (decr below 0)
@@ -547,10 +539,10 @@ QRX_RDCHR:
 
 NEXT1:
 		ldl	rp			; else, pop the index
-		adcx	4
+		adc	4
 		stl	rp
 		ldl	ip
-		adcx	4
+		adc	4
 		stl	ip
 		$NEXT
 
@@ -565,7 +557,7 @@ NEXT1:
 		db	0aah
 						;else continue past	bytes
 		ldl	ip			;point IP to next cell	  1
-		adcx	4			;(past the inline branch) 1
+		adc	4			;(past the inline branch) 1
 		stl	ip			;			  1
 		$NEXT				;			  7
 
@@ -649,7 +641,7 @@ BRAN1:
 		ldl	rp			; get current rp
 		ldnl	0			; get current (rp)
 		ldl	rp			; adjust rp up one cell
-		adcx	4			;
+		adc	4			;
 		stl	rp			;
 		pushx				; return data in tos
 		$NEXT
@@ -696,7 +688,7 @@ BRAN1:
 
 		$CODE	4,'DROP',DROP
 		ldl	spx			; get sp
-		adcx	4			; bump by 1 cell
+		adc	4			; bump by 1 cell
 		stl	spx			; and set it
 		$NEXT
 
