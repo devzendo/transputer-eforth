@@ -228,8 +228,8 @@ celldn	macro			; bump A value down by 1 cell
 	endm
 
 uwait	macro			; kill a little time
-	db	023h,0ffh
-	db	023h,0ffh	; 2 wcnt operations (slow no-ops)
+	wcnt
+	wcnt			; 2 wcnt operations (slow no-ops)
 	endm
 
 ;
