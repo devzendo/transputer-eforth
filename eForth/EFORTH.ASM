@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-notx	macro			; bitwise not opcode
-	db	023h,0f2h
-	endm
-
 move	macro			; transputer block move
 	db	024h,0fah
 	endm
@@ -701,7 +697,7 @@ BRAN1:
 		mint				; $8000.0000
 		and				; sign bit
 		eqc	0			; true if 0 or +
-		notx				; flip it
+		not				; flip it
 		ldl	spx			;
 		stnl	0			;
 		$NEXT
