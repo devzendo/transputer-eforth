@@ -227,14 +227,6 @@ celldn	macro			; bump A value down by 1 cell
 	db	060h,08ch
 	endm
 
-lb	macro			; load byte opcode
-	db	0f1h
-	endm
-
-sb	macro			; store byte opcode
-	db	023h,0fbh
-	endm
-
 uwait	macro			; kill a little time
 	db	023h,0ffh
 	db	023h,0ffh	; 2 wcnt operations (slow no-ops)
