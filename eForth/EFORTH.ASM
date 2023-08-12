@@ -173,9 +173,11 @@ ORG	_CODE					;;restore code pointer
 
 ; Transputer assembly code macros and defines
 
-entry1	equ	025fb2148h	; for direct threading
-entry2	equ	030f084fah
-entry3	equ	0000000f6h
+entry1	equ	025fb2148h	; for direct threading 25 fb: move2dinit (?!), 21 48: ldc 18
+entry2	equ	030f084fah	; 30:ldnl 0, f0:rev, 84:adc 4, fa:wsub
+entry3	equ	0000000f6h	; f6:gcall
+; Or is this executed as
+; 48:ldc 8, 21 fb:ldpi, 25 fa:dup, 84:adc 4, f0:rev, 30:ldnl 0, f6:gcall?
 
 ; IServer I/O frames and link 0 addresses
 
