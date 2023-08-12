@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-jzx	macro	val		; jump if zero
-	db	0a0h or (val and 00fh)
-	endm
-
 andx	macro			; bitwise and opcode
 	db	024h,0f6h
 	endm
@@ -398,7 +394,7 @@ ORG	CODEE					;start code dictionary
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
 		ldl		inbyte				; (inbyte)
-		jzx		QRX_RDCHR
+		cj		QRX_RDCHR
 
 ;		No character is available, return false.
 		ldc		0					; push a false
