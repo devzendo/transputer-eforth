@@ -128,13 +128,13 @@ ORG	_CODE					;;restore code pointer
 $COLON	MACRO	LEX,NAME,LABEL
 	$CODE	LEX,NAME,LABEL
 	align	4
-	db	048h		;; ldc x	point to dd DOLST
-	db	021h,0fbh	;; ldpi 	make prg rel -> absolute
-	db	025h,0fah	;; dup	 	second copy
-	db	084h		;; adc 4	point past the 'dd DOLST'
-	db	0f0h		;; rev		put incremented pointer under
-	db	030h		;; ldnl 0	fetch the pointer
-	db	0f6h		;; gcall	jump to it
+	ldc	8		;; point to dd DOLST
+	ldpi			;; make prg rel -> absolute
+	dup			;; second copy
+	adc	4		;; point past the 'dd DOLST'
+	rev			;; put incremented pointer under
+	ldnl	0		;; fetch the pointer
+	gcall			;; jump to it
 	db	0,0,0
 	dd	DOLST
 	ENDM
@@ -144,13 +144,13 @@ $COLON	MACRO	LEX,NAME,LABEL
 $USER	MACRO	LEX,NAME,LABEL
 	$CODE	LEX,NAME,LABEL
 	align	4
-	db	048h		;; ldc 8	point to dd DOLST
-	db	021h,0fbh	;; ldpi 	make prg rel -> absolute
-	db	025h,0fah	;; dup	 	second copy
-	db	084h		;; adc 4	point past the 'dd DOLST'
-	db	0f0h		;; rev		put incremented pointer under
-	db	030h		;; ldnl 0	fetch the pointer
-	db	0f6h		;; gcall	jump to it
+	ldc	8		;; point to dd DOLST
+	ldpi			;; make prg rel -> absolute
+	dup			;; second copy
+	adc	4		;; point past the 'dd DOLST'
+	rev			;; put incremented pointer under
+	ldnl	0		;; fetch the pointer
+	gcall			;; jump to it
 	db	0,0,0
 	dd	DOLST
 	DD	DOUSE,_USER			;;followed by doUSER and offset
