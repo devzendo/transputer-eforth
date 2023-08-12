@@ -223,14 +223,6 @@ pushx	macro			; push reg A to tos		bytes
 	stnl	0		;; (sp) = n			  1
 	endm
 
-rev	macro
-	db	0f0h
-	endm
-
-gcall	macro			; general call opcode
-	db	0f6h
-	endm
-
 celldn	macro			; bump A value down by 1 cell
 	db	060h,08ch
 	endm
@@ -241,10 +233,6 @@ lb	macro			; load byte opcode
 
 sb	macro			; store byte opcode
 	db	023h,0fbh
-	endm
-
-mint	macro			; generate minimum integer opcode
-	db	024h,0f2h
 	endm
 
 uwait	macro			; kill a little time
