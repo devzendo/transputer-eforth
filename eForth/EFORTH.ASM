@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-move	macro			; transputer block move
-	db	024h,0fah
-	endm
-
 
 ; maintain popx and pushx lengths at 6 bytes to avoid problems with
 ;	relative branches in the assembly code words that use them
