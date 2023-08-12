@@ -323,16 +323,16 @@ ASSUME	CS:MAIN
 ORG	COLDD					;beginning of cold boot
 
 ORIG:
-	mint			; most negative integer 	( $8000.0000 )
-	prfx	2
-	prfx	0
-	adcx	0		; $8000.0200
-	db	023h,0fch	; gajw - set workspace pointer
+	mint			; most negative integer 	( 0x80000000 )
+	adc	0x0200
+	gajw			; set workspace pointer to 0x80000200
+				; Will this be enough? Is it needed after
+				; bootstrap has already set it?
 	mint			; most neg
 	stl	0		; keep it handy
-	db	02bh,0f2h	; clear debug break		( clrj0break )
-	db	027h,0fah	; disable hi-pri timer  ( timerdisableh )
-	db	027h,0fbh	; disable lo-pri timer  ( timerdisablel )
+	clrj0break		; clear debug break
+	timerdisableh		; disable hi-pri timer  ( timerdisableh )
+	timerdisablel		; disable lo-pri timer  ( timerdisablel )
 
 ;	set initial return stack pointer
 	ldc	RPP
