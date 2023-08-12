@@ -208,10 +208,6 @@ jzx	macro	val		; jump if zero
 	db	0a0h or (val and 00fh)
 	endm
 
-eqc	macro	val		; compare constant opcode
-	db	0c0h or (val and 00fh)
-	endm
-
 andx	macro			; bitwise and opcode
 	db	024h,0f6h
 	endm
