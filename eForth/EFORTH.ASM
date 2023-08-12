@@ -217,7 +217,7 @@ popx	macro			; pop tos to reg A		bytes
 
 pushx	macro			; push reg A to tos		bytes
 	ldl	spx		;; sp				  1
-	db	060h,08ch	;; adc -4			  2
+	adc	-4		;; adc -4			  2
 	stl	spx		;;				  1
 	ldl	spx		;;				  1
 	stnl	0		;; (sp) = n			  1
