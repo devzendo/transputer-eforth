@@ -199,12 +199,6 @@ rp	equ	07h
 scratch equ	0fh
 
 
-
-prfx	macro	val,modif,cnt	; prefix instruction
-	db	020h or (val modif cnt and 00fh)
-	endm
-
-
 ; maintain popx and pushx lengths at 6 bytes to avoid problems with
 ;	relative branches in the assembly code words that use them
 popx	macro			; pop tos to reg A		bytes
