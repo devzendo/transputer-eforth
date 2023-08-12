@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-ldnl	macro	val		; load non-local opcode
-	db	030h or (val and 00fh)
-	endm
-
 jzx	macro	val		; jump if zero
 	db	0a0h or (val and 00fh)
 	endm
