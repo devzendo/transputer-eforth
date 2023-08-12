@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-orx	macro			; bitwise or  opcode
-	db	024h,0fbh
-	endm
-
 xorx	macro			; bitwise xor opcode
 	db	023h,0f3h
 	endm
@@ -733,7 +729,7 @@ BRAN1:
 		popx				; get 1 parm
 		ldl	spx			;
 		ldnl	0			; get 2nd parm
-		orx				; do bitwise or
+		or				; do bitwise or
 		ldl	spx			;
 		stnl	0			; result to tos
 		$NEXT
