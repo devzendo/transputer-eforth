@@ -204,10 +204,6 @@ prfx	macro	val,modif,cnt	; prefix instruction
 	db	020h or (val modif cnt and 00fh)
 	endm
 
-andx	macro			; bitwise and opcode
-	db	024h,0f6h
-	endm
-
 orx	macro			; bitwise or  opcode
 	db	024h,0fbh
 	endm
@@ -503,7 +499,7 @@ QRX_RDCHR:
 		ldl	rp
 		stnl	0			; and back to (rp)
 		mint				; sign bit set? (decr below 0)
-		andx
+		and
 		eqc	0
 
 ; NOTE: The following relative branch is sensitive to the length of the
@@ -711,7 +707,7 @@ BRAN1:
 		ldl	spx			; access the stack
 		ldnl	0			; get value
 		mint				; $8000.0000
-		andx				; sign bit
+		and				; sign bit
 		eqc	0			; true if 0 or +
 		notx				; flip it
 		ldl	spx			;
@@ -725,7 +721,7 @@ BRAN1:
 		popx				; get 1 parm
 		ldl	spx			;
 		ldnl	0			; get 2nd parm
-		andx				; do bitwise and
+		and				; do bitwise and
 		ldl	spx			;
 		stnl	0			; result to tos
 		$NEXT
