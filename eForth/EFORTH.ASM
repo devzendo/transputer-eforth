@@ -128,14 +128,14 @@ ORG	_CODE					;;restore code pointer
 $COLON	MACRO	LEX,NAME,LABEL
 	$CODE	LEX,NAME,LABEL
 	align	4
-	ldc	8		;; point to dd DOLST
-	ldpi			;; make prg rel -> absolute
-	dup			;; second copy
-	adc	4		;; point past the 'dd DOLST'
-	rev			;; put incremented pointer under
-	ldnl	0		;; fetch the pointer
-	gcall			;; jump to it
-	db	0,0,0
+	ldc	8		;; point to dd DOLST (rel-dd-DOLST)
+	ldpi			;; make prg rel -> absolute (&dd-DOLST)
+	dup			;; second copy (&dd-DOLST &dd-DOLST)
+	adc	4		;; point past the 'dd DOLST' (&next-word &dd-DOLST)
+	rev			;; put incremented pointer under (&dd-DOLST &next-word)
+	ldnl	0		;; fetch the pointer (&DOLST, &next-word)
+	gcall			;; jump to it - call DOLST with the &next-word
+	db	0,0		;; MJG unsure about change from 0,0,0 to 0,0
 	dd	DOLST
 	ENDM
 
@@ -151,7 +151,7 @@ $USER	MACRO	LEX,NAME,LABEL
 	rev			;; put incremented pointer under
 	ldnl	0		;; fetch the pointer
 	gcall			;; jump to it
-	db	0,0,0
+	db	0,0		;; MJG unsure about change from 0,0,0 to 0,0
 	dd	DOLST
 	DD	DOUSE,_USER			;;followed by doUSER and offset
 	_USER	= _USER+CELLL			;;update user area offset
@@ -193,7 +193,7 @@ inbyte	equ	01h		; single byte responses from the IServer are read here
 free2	equ	02h		; not used for anything now
 
 ; Forth pointers
-w	equ	04h
+;w	equ	04h		; was used by $NEXT, but not now
 spx	equ	05h
 ip	equ	06h
 rp	equ	07h
@@ -238,9 +238,10 @@ $NEXT	MACRO				;;			bytes
 	adc	4			;; bump it one cell	  1
 	stl	ip			;; and save it back	  1
 	ldnl	0			;; get orig (ip)	  1
-	dup				;; it points to cfa	  2
-	stl	w			;; save it		  1
-	ldnl	0			;; get the code address   1
+	; dup				;; it points to cfa	  2
+	; stl	w			;; save it		  1
+	; MJG doesn't think this ldnl is needed - it's dereferencing the CFA - dereferencing just loads some code into Areg... 
+	; ldnl	0			;; get the code address   1
 	gcall				;; and jump to it	  1
 	ENDM
 
@@ -252,11 +253,15 @@ ASSUME	CS:MAIN
 ORG	COLDD					;beginning of cold boot
 
 ORIG:
-	mint			; most negative integer 	( 0x80000000 )
-	adc	0x0200
-	gajw			; set workspace pointer to 0x80000200
+				; WPtr is at 800001C1 at this point
+	;mint			; most negative integer 	( 0x80000000 )
+	;adc	0x0200
+	;gajw			; set workspace pointer to 0x80000200
 				; Will this be enough? Is it needed after
 				; bootstrap has already set it?
+				; This gajw also changes priority - intended?
+				; WPtr is now 80000201
+
 	mint			; most neg
 	stl	0		; keep it handy
 	clrj0break		; clear debug break
@@ -415,15 +420,22 @@ QRX_RDCHR:
 
 ;   doLIST	( a -- )
 ;		Process colon list.
+;		
+;		(rtn-addr, &next-word --)
 
 		$CODE	COMPO+6,'doLIST',DOLST
 		stl	scratch 		; trash xputer rtn addr
+						; this is after the gcall
+						; in COLON
 		stl	scratch 		; save target address
-		ldl	ip			; push ip onto return stack
-		ldl	rp			; get rp
-		celldn				; adjust down 1 cell
-		stnl	0			; and put ip there
-		ldl	scratch 		; get new list address
+						; scratch=&next-word
+		ldl	ip			; push ip onto return stack: (ip)
+		ldl	rp			;   get rp (rp ip)
+		celldn				;   adjust down 1 cell (rp+1 ip)
+		dup				; (rp+1 rp+1 ip)
+		stl	rp			; update rp (rp+1 ip)
+		stnl	0			;   and put ip there ()
+		ldl	scratch 		; get new list address (&next-word)
 		stl	ip			; to ip
 		$NEXT
 
@@ -466,7 +478,9 @@ QRX_RDCHR:
 ;		macro $NEXT and the number of code bytes between it and
 ;		label next1. Count carefully!!!!!
 ;		JZ	NEXT1
-		db	0aah			; if so, exit loop
+;		db	0a9h			; if so, exit loop
+; tmasm can work out the relative jump, no need to count bytes...
+		cj	NEXT1
 						;			bytes
 		ldl	ip			; else, continue loop	  1
 		ldnl	0			; ip = (ip)		  1
@@ -490,7 +504,8 @@ NEXT1:
 
 ; NOTE: relative branch is sensitive to length of macro $NEXT
 ;		JZ	BRAN1			;yes, so branch
-		db	0aah
+;		db	0a9h
+		cj	BRAN1
 						;else continue past	bytes
 		ldl	ip			;point IP to next cell	  1
 		adc	4			;(past the inline branch) 1
