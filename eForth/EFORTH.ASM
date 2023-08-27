@@ -135,7 +135,7 @@ $COLON	MACRO	LEX,NAME,LABEL
 	rev			;; put incremented pointer under (&dd-DOLST &next-word)
 	ldnl	0		;; fetch the pointer (&DOLST, &next-word)
 	gcall			;; jump to it - call DOLST with the &next-word
-	db	0,0		;; MJG unsure about change from 0,0,0 to 0,0
+	db	0,0
 	dd	DOLST
 	ENDM
 
@@ -151,7 +151,7 @@ $USER	MACRO	LEX,NAME,LABEL
 	rev			;; put incremented pointer under
 	ldnl	0		;; fetch the pointer
 	gcall			;; jump to it
-	db	0,0		;; MJG unsure about change from 0,0,0 to 0,0
+	db	0,0
 	dd	DOLST
 	DD	DOUSE,_USER			;;followed by doUSER and offset
 	_USER	= _USER+CELLL			;;update user area offset
@@ -188,22 +188,20 @@ STDOUT_STREAMID EQU 0x01
 LINK0_OUTPUT    EQU 0x80000000
 LINK0_INPUT     EQU 0x80000010
 
-; maintain popx and pushx lengths at 6 bytes to avoid problems with
-;	relative branches in the assembly code words that use them
-popx	macro			; pop tos to reg A		bytes
-	ldl	spx		;; fetch sp			  1
-	dup			;; extra copy for fetch 	  2
-	adc	4		;; bump up 1 level		  1
-	stl	spx		;; save it			  1
-	ldnl	0		;; get previous tos		  1
+popx	macro			; pop tos to reg A
+	ldl	spx		;; fetch sp
+	dup			;; extra copy for fetch
+	adc	4		;; bump up 1 level
+	stl	spx		;; save it
+	ldnl	0		;; get previous tos
 	endm
 
-pushx	macro			; push reg A to tos		bytes
-	ldl	spx		;; sp				  1
-	adc	-4		;; adc -4			  2
-	stl	spx		;;				  1
-	ldl	spx		;;				  1
-	stnl	0		;; (sp) = n			  1
+pushx	macro			; push reg A to tos
+	ldl	spx		;; sp
+	adc	-4		;; adc -4
+	stl	spx
+	ldl	spx
+	stnl	0		;; (sp) = n
 	endm
 
 celldn	macro			; bump A value down by 1 cell
@@ -217,19 +215,13 @@ uwait	macro			; kill a little time
 
 ;
 ;	Assemble inline indirect threaded code ending.
-;		Maintain at same number of bytes in length. Relative branches
-;		in code rely on a 11 byte expansion.
-$NEXT	MACRO				;;			bytes
-	ldl	ip			;; get ip		  1
-	dup				;;			  2
-	adc	4			;; bump it one cell	  1
-	stl	ip			;; and save it back	  1
-	ldnl	0			;; get orig (ip)	  1
-	; dup				;; it points to cfa	  2
-	; stl	w			;; save it		  1
-	; MJG doesn't think this ldnl is needed - it's dereferencing the CFA - dereferencing just loads some code into Areg... 
-	; ldnl	0			;; get the code address   1
-	gcall				;; and jump to it	  1
+$NEXT	MACRO
+	ldl	ip			;; get ip
+	dup
+	adc	4			;; bump it one cell
+	stl	ip			;; and save it back
+	ldnl	0			;; get orig (ip)
+	gcall				;; and jump to it
 	ENDM
 
 ;; Main entry points and COLD start data
@@ -482,18 +474,12 @@ QRX_RDCHR:
 		and
 		eqc	0
 
-; NOTE: The following relative branch is sensitive to the length of the
-;		macro $NEXT and the number of code bytes between it and
-;		label next1. Count carefully!!!!!
-;		JZ	NEXT1
-;		db	0a9h			; if so, exit loop
-; tmasm can work out the relative jump, no need to count bytes...
 		cj	NEXT1
-						;			bytes
-		ldl	ip			; else, continue loop	  1
-		ldnl	0			; ip = (ip)		  1
-		stl	ip			;			  1
-		$NEXT				;			  7
+
+		ldl	ip			; else, continue loop
+		ldnl	0			; ip = (ip)
+		stl	ip
+		$NEXT
 
 NEXT1:
 		ldl	rp			; else, pop the index
@@ -510,15 +496,12 @@ NEXT1:
 		$CODE	COMPO+7,'?branch',QBRAN
 		popx				; get flag
 
-; NOTE: relative branch is sensitive to length of macro $NEXT
-;		JZ	BRAN1			;yes, so branch
-;		db	0a9h
 		cj	BRAN1
-						;else continue past	bytes
-		ldl	ip			;point IP to next cell	  1
-		adc	4			;(past the inline branch) 1
-		stl	ip			;			  1
-		$NEXT				;			  7
+						;else continue past
+		ldl	ip			;point IP to next cell
+		adc	4			;(past the inline branch)
+		stl	ip
+		$NEXT
 
 BRAN1:
 		ldl	ip			; get ip
