@@ -333,7 +333,7 @@ ORG	CODEE					;start code dictionary
 
 ;       	Read IServer response
 		ldlp    inbyte              ; (&inbyte)
-		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     LINK0_INPUT	    ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
 
@@ -351,26 +351,26 @@ ORG	CODEE					;start code dictionary
 
 ;		Read IServer response
 		ldlp    inbyte              ; (&inbyte)
-		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     LINK0_INPUT	    ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
-		ldl		inbyte				; (inbyte)
-		cj		QRX_RDCHR
+		ldl	inbyte		    ; (inbyte)
+		cj	QRX_RDCHR
 
 ;		No character is available, return false.
-		ldc		0					; push a false
+		ldc	0		    ; push a false
 		pushx
 		$NEXT
 
 ;		A character is available, read it and return true.
 QRX_RDCHR:
 		ldlp    inbyte              ; (&inbyte)
-		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     LINK0_INPUT         ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
-		ldl		inbyte      ; (inbyte)
+		ldl	inbyte      	    ; (inbyte)
  		pushx			    ; push char to tos
-		ldc		-1
+		ldc	-1
 		pushx			    ; true on top of it
 		$NEXT
 		
@@ -386,9 +386,9 @@ QRX_RDCHR:
 		popx		            ; get the char (char link0)
 		outbyte                     ; ()
 
-					    ; Read (and ignore) IServer response
+;		Read (and ignore) IServer response
 		ldlp    inbyte              ; (&inbyte)
-		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
+		ldc     LINK0_INPUT	    ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
 
