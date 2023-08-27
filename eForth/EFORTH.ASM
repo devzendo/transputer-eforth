@@ -2331,6 +2331,7 @@ NTOP	EQU	_NAME-0 	;next available memory in name dictionary
 CTOP	EQU	$+0		;next available memory in code dictionary
 
 MAIN	ENDS
+		ORG	NAMEE
 Boot2End:
 END	ORIG
 
