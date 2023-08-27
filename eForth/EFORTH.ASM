@@ -297,20 +297,25 @@ ULAST:
 ; Transputer initial workspace.
 ; Workspace local indices...
 ; Workspace[0] cannot be used; outbyte uses it.
-inbyte	equ	01h		; single byte responses from the IServer are read here
 ; eForth VM registers
-spx	equ	02h
-ip	equ	03h
-rp	equ	04h
-scratch equ	05h
+spx	equ	01h
+ip	equ	02h
+rp	equ	03h
+scratch equ	04h
+inbyte	equ	05h		; single byte responses from the IServer are read here
+rpchbuf equ	06h		; REQ_PUTCHAR requests are built up here
+;		07h		; taken up in the RPCHBUF
 
 ; Workspace area defined as symbols
 OUTBYTE:	DD	0
-INBYTE:		DD	0
 SPX:		DD	0
 IP:		DD	0
 RP:		DD	0
 SCRATCH:	DD	0
+INBYTE:		DD	0
+RPCHBUF:	DB	6,0,REQ_PUTCHAR,0xff,0,0,0,0	; note 2 cells long
+; End of workspace
+EOW:	
 
 ; There are only 64 cells between COLDD and here - if more workspace area is used
 ; watch out for collisions.. Currently SCRATCH is 800001F8 and CODEE is 80000220.
@@ -379,12 +384,20 @@ QRX_RDCHR:
 ;		Send character c to the output device (IServer console).
 
 		$CODE	3,'TX!',TXSTO
-		ldc     LINK0_OUTPUT        ; (link0)
-		ldc     REQ_PUTCHAR         ; (req_putchar link0)
-		outbyte                     ; ()
-		ldc     LINK0_OUTPUT        ; (link0)
-		popx		            ; get the char (char link0)
-		outbyte                     ; ()
+;		LEN-LSB LEN-MSB REQ_PUTCHAR c 00 00 00 00 
+;		| framelength | frametype |   | padding |
+;		Frame length is always 6 for a REQ_PUTCHAR
+
+		popx			    ; get the char (c)
+		ldlp	rpchbuf		    ; (&rpchbuf)
+		adc	3		    ; (&buf c)
+		sb			    ; write char in request at offset 3
+
+;		Send the request down the link
+		ldlp	rpchbuf		    ; (rpchbuf)
+		ldc     LINK0_OUTPUT        ; (link0 rpchbug)
+		ldc	8		    ; (len=8 link0 rpchbuf)
+		out
 
 ;		Read (and ignore) IServer response
 		ldlp    inbyte              ; (&inbyte)
