@@ -188,19 +188,6 @@ STDOUT_STREAMID EQU 0x01
 LINK0_OUTPUT    EQU 0x80000000
 LINK0_INPUT     EQU 0x80000010
 
-; workspace allocation
-inbyte	equ	01h		; single byte responses from the IServer are read here
-free2	equ	02h		; not used for anything now
-
-; Forth pointers
-;w	equ	04h		; was used by $NEXT, but not now
-spx	equ	05h
-ip	equ	06h
-rp	equ	07h
-
-scratch equ	0fh
-
-
 ; maintain popx and pushx lengths at 6 bytes to avoid problems with
 ;	relative branches in the assembly code words that use them
 popx	macro			; pop tos to reg A		bytes
@@ -250,17 +237,17 @@ $NEXT	MACRO				;;			bytes
 MAIN	SEGMENT USE32
 ASSUME	CS:MAIN
 
-ORG	COLDD					;beginning of cold boot
+ORG	COLDD			; Beginning of cold boot.
 
 ORIG:
 				; WPtr is at 800001C1 at this point
-	;mint			; most negative integer 	( 0x80000000 )
-	;adc	0x0200
-	;gajw			; set workspace pointer to 0x80000200
-				; Will this be enough? Is it needed after
-				; bootstrap has already set it?
+				; which is where primary boot put it
+				; but that's in the UZERO..ULAST area
+				; so set it to the end of this.
+	ldc	ULAST
+	gajw			; set workspace pointer to 0x800001E4
 				; This gajw also changes priority - intended?
-				; WPtr is now 80000201
+				; WPtr is now 800001E5
 
 	mint			; most neg
 	stl	0		; keep it handy
@@ -314,6 +301,27 @@ UZERO:		DD	4 DUP (0)		;reserved
 		DD	NTOP			;NP
 		DD	LASTN			;LAST
 ULAST:
+
+; Transputer initial workspace.
+; Workspace local indices...
+; Workspace[0] cannot be used; outbyte uses it.
+inbyte	equ	01h		; single byte responses from the IServer are read here
+; eForth VM registers
+spx	equ	02h
+ip	equ	03h
+rp	equ	04h
+scratch equ	05h
+
+; Workspace area defined as symbols
+OUTBYTE:	DD	0
+INBYTE:		DD	0
+SPX:		DD	0
+IP:		DD	0
+RP:		DD	0
+SCRATCH:	DD	0
+
+; There are only 64 cells between COLDD and here - if more workspace area is used
+; watch out for collisions.. Currently SCRATCH is 800001F8 and CODEE is 80000220.
 
 ORG	CODEE					;start code dictionary
 
