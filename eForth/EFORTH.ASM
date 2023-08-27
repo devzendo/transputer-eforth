@@ -325,13 +325,13 @@ ORG	CODEE					;start code dictionary
 		$CODE	3,'BYE',BYE
 ;		Terminate the IServer with a success exit code...
 		ldc     LINK0_OUTPUT        ; (link0)
-        ldc     REQ_EXIT            ; (req_exit link0)
-        outbyte                     ; ()
+		ldc     REQ_EXIT            ; (req_exit link0)
+		outbyte                     ; ()
 		ldc     LINK0_OUTPUT        ; (link0)
-		ldc		0					; (success link0)
+		ldc		0	    ; (success link0)
 		outword
 
-;       Read IServer response
+;       	Read IServer response
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
@@ -346,10 +346,10 @@ ORG	CODEE					;start code dictionary
 
 		$CODE	3,'?RX',QRX
 		ldc     LINK0_OUTPUT        ; (link0)
-        ldc     REQ_POLLKEY         ; (req_pollkey link0)
-        outbyte                     ; ()
+		ldc     REQ_POLLKEY         ; (req_pollkey link0)
+		outbyte                     ; ()
 
-;       Read IServer response
+;		Read IServer response
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
@@ -368,10 +368,10 @@ QRX_RDCHR:
 		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
-		ldl		inbyte				; (inbyte)
- 		pushx						; push char to tos
+		ldl		inbyte      ; (inbyte)
+ 		pushx			    ; push char to tos
 		ldc		-1
-		pushx						; true on top of it
+		pushx			    ; true on top of it
 		$NEXT
 		
 
@@ -380,13 +380,13 @@ QRX_RDCHR:
 
 		$CODE	3,'TX!',TXSTO
 		ldc     LINK0_OUTPUT        ; (link0)
-        ldc     REQ_PUTCHAR         ; (req_putchar link0)
-        outbyte                     ; ()
+		ldc     REQ_PUTCHAR         ; (req_putchar link0)
+		outbyte                     ; ()
 		ldc     LINK0_OUTPUT        ; (link0)
-		popx			            ; get the char (char link0)
-        outbyte                     ; ()
+		popx		            ; get the char (char link0)
+		outbyte                     ; ()
 
-;       Read (and ignore) IServer response
+					    ; Read (and ignore) IServer response
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_OUTPUT        ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
