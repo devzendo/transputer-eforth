@@ -205,7 +205,7 @@ pushx	macro			; push reg A to tos
 	endm
 
 celldn	macro			; bump A value down by 1 cell
-	db	060h,08ch
+	adc	-4		;; adc -4
 	endm
 
 uwait	macro			; kill a little time
@@ -415,6 +415,22 @@ QRX_RDCHR:
 		uwait			; kill time between writes
 		$NEXT
 
+;; Parachute specific words
+
+;   TDIS	( -- )
+;		Toggles emulator disassembly.
+
+		$CODE	4,'TDIS',TDISASM
+		toggledisasm
+		$NEXT
+
+;   TERMIN	-- )
+;		Terminates emulator.
+
+		$CODE	6,'TERMIN',TERMINATE
+		terminate
+		$NEXT
+
 
 
 ;; The kernel
@@ -444,9 +460,9 @@ QRX_RDCHR:
 						; scratch=&next-word
 		ldl	ip			; push ip onto return stack: (ip)
 		ldl	rp			;   get rp (rp ip)
-		celldn				;   adjust down 1 cell (rp+1 ip)
-		dup				; (rp+1 rp+1 ip)
-		stl	rp			; update rp (rp+1 ip)
+		celldn				;   adjust down 1 cell (rp-1 ip)
+		dup				; (rp-1 rp-1 ip)
+		stl	rp			; update rp (rp-1 ip)
 		stnl	0			;   and put ip there ()
 		ldl	scratch 		; get new list address (&next-word)
 		stl	ip			; to ip
