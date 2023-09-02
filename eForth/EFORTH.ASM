@@ -83,7 +83,7 @@ TIC		EQU	39			;tick
 
 CALLL		EQU	0h	; was 0E890H NOP CALL opcodes
 
-;; Memory allocation	0//code>--//--<name//up>--<sp//tib>--rp//em
+;; Memory allocation	0//code>--/../--<name//-----<sp//tib>--<rp//up>--em
 
 EM		EQU	0x80400000              ;top of memory (4MB, the default Parachute RAM size)
 COLDD		EQU	Boot2Start	        ;cold start vector
@@ -91,11 +91,11 @@ COLDD		EQU	Boot2Start	        ;cold start vector
 US		EQU	64*CELLL		;user area size in cells
 RTS		EQU	64*CELLL		;return stack/TIB size
 
-RPP		EQU	EM-8*CELLL		;start of return stack (RP0)
+UPP		EQU	EM-64*CELLL	        ;start of user area (UP0)
+RPP		EQU	EM-66*CELLL		;start of return stack (RP0)
 TIBB	        EQU	RPP-RTS 		;terminal input buffer (TIB)
 SPP		EQU	TIBB-8*CELLL	        ;start of data stack (SP0)
-UPP		EQU	EM-256*CELLL	        ;start of user area (UP0)
-NAMEE		EQU	UPP-8*CELLL		;name dictionary
+NAMEE		EQU	SPP-176*CELLL		;name dictionary
 CODEE		EQU	COLDD+US		;code dictionary
 
 ;; Initialize assembly variables
