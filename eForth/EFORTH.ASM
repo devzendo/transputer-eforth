@@ -247,6 +247,8 @@ ORIG:
 	timerdisableh		; disable hi-pri timer  ( timerdisableh )
 	timerdisablel		; disable lo-pri timer  ( timerdisablel )
 
+	toggledisasm
+
 ;	set initial return stack pointer
 	ldc	RPP
 	stl	rp
@@ -360,7 +362,7 @@ ORG	CODEE					;start code dictionary
 		ldc     1                   ; (len=1 link0 &inbyte)
 		in
 		ldl	inbyte		    ; (inbyte)
-		cj	QRX_RDCHR
+		cj	QRX_RDCHR1
 
 ;		No character is available, return false.
 		ldc	0		    ; push a false
@@ -368,7 +370,7 @@ ORG	CODEE					;start code dictionary
 		$NEXT
 
 ;		A character is available, read it and return true.
-QRX_RDCHR:
+QRX_RDCHR1:
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_INPUT         ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
