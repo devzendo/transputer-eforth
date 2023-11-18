@@ -247,8 +247,6 @@ ORIG:
 	timerdisableh		; disable hi-pri timer  ( timerdisableh )
 	timerdisablel		; disable lo-pri timer  ( timerdisablel )
 
-	toggledisasm
-
 ;	set initial return stack pointer
 	ldc	RPP
 	stl	rp
@@ -256,6 +254,8 @@ ORIG:
 ;	set initial data stack pointer
 	ldc	SPP
 	stl	spx
+
+	toggledisasm
 
 ;	jump to cold start
 	ldc	COLD
@@ -307,6 +307,8 @@ scratch equ	04h
 inbyte	equ	05h		; single byte responses from the IServer are read here
 rpchbuf equ	06h		; REQ_PUTCHAR requests are built up here
 ;		07h		; taken up in the RPCHBUF
+rxitbuf	equ	08h		; REQ_EXIT request literal bytes stored here
+;		09h		; for direct sending
 
 ; Workspace area defined as symbols
 OUTBYTE:	DD	0
@@ -316,6 +318,7 @@ RP:		DD	0
 SCRATCH:	DD	0
 INBYTE:		DD	0
 RPCHBUF:	DB	6,0,REQ_PUTCHAR,0xff,0,0,0,0	; note 2 cells long
+RXITBUF:	DB	6,0,REQ_EXIT,0,0,0,0,0		; note 2 cells long
 ; End of workspace
 EOW:	
 
@@ -331,14 +334,16 @@ ORG	CODEE					;start code dictionary
 ;
 		$CODE	3,'BYE',BYE
 ;		Terminate the IServer with a success exit code...
-		ldc     LINK0_OUTPUT        ; (link0)
-		ldc     REQ_EXIT            ; (req_exit link0)
-		outbyte                     ; ()
-		ldc     LINK0_OUTPUT        ; (link0)
-		ldc		0	    ; (success link0)
-		outword
+;		LEN-LSB LEN-MSB REQ_EXIT     xx xx xx xx   00
+;		| framelength | frametype |  | return |    | padding |
+;		Frame length is always 6 for a REQ_EXIT
+;		Send the request down the link
+		ldlp	rxitbuf		    ; (rxitbuf)
+		ldc     LINK0_OUTPUT        ; (link0 rxitbuf)
+		ldc	8		    ; (len=8 link0 rxitbuf)
+		out
 
-;       	Read IServer response
+;		Read (and ignore) IServer response
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_INPUT	    ; (link0 &inbyte)
 		ldc     1                   ; (len=1 link0 &inbyte)
@@ -397,7 +402,7 @@ QRX_RDCHR1:
 
 ;		Send the request down the link
 		ldlp	rpchbuf		    ; (rpchbuf)
-		ldc     LINK0_OUTPUT        ; (link0 rpchbug)
+		ldc     LINK0_OUTPUT        ; (link0 rpchbuf)
 		ldc	8		    ; (len=8 link0 rpchbuf)
 		out
 
@@ -424,6 +429,13 @@ QRX_RDCHR1:
 
 		$CODE	4,'TDIS',TDISASM
 		toggledisasm
+		$NEXT
+
+;   TMON	( -- )
+;		Toggles emulator monitor.
+
+		$CODE	4,'TMON',TMONITOR
+		togglemonitor
 		$NEXT
 
 ;   TERMIN	-- )
@@ -2325,9 +2337,26 @@ WORS2:		DD	EXIT
 ;		Display the sign-on message of eForth.
 
 		$COLON	2,'hi',HI
-		DD	STOIO,CR		;initialize I/O
-		D$	DOTQP,'eForth v'        ;model
+		DD	STOIO			;initialize I/O
+;		DD	CR		
+;		D$	DOTQP,'eForth v'        ;model
+
+FOO:		DD	DOLIT, 'A', TXSTO
+		DD	DOLIT, 'B', TXSTO
+		DD	DOLIT, 'C', TXSTO
+		DD	DOLIT, 'D', TXSTO
+		DD	DOLIT, 'E', TXSTO
+		DD	DOLIT, 'F', TXSTO
+		DD	DOLIT, 'G', TXSTO
+		DD	DOLIT, 'H', TXSTO
+		DD	BYE
+		DD	CR
+
 		DD	BASE,AT,HEX		;save radix
+
+		DD	CR
+		D$	DOTQP,'now the version string'
+
 		DD	VERSN,BDIGS,DIG,DIG
 		DD	DOLIT,'.',HOLD
 		DD	DIGS,EDIGS,TYPEE	;format version number
