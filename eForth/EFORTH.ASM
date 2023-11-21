@@ -255,8 +255,6 @@ ORIG:
 	ldc	SPP
 	stl	spx
 
-	toggledisasm
-
 ;	jump to cold start
 	ldc	COLD
 	gcall			; jump to it
@@ -323,7 +321,7 @@ RXITBUF:	DB	6,0,REQ_EXIT,0,0,0,0,0		; note 2 cells long
 EOW:	
 
 ; There are only 64 cells between COLDD and here - if more workspace area is used
-; watch out for collisions.. Currently SCRATCH is 800001F8 and CODEE is 80000220.
+; watch out for collisions.. Currently EOW is 8000020C and CODEE is 80000220.
 
 ORG	CODEE					;start code dictionary
 
@@ -445,6 +443,10 @@ QRX_RDCHR1:
 		terminate
 		$NEXT
 
+;   NOP		( -- )
+;		Does nothing but shows up as a symbol being executed.
+		$CODE	3,'NOP',NOP
+		$NEXT
 
 
 ;; The kernel
@@ -568,7 +570,7 @@ BRAN1:
 		popx				; get the address
 		popx				; ..and the data
 		rev
-		ldnl	0			; store it
+		stnl	0			; store it
 		$NEXT
 
 ;   @		( a -- w )
@@ -2337,26 +2339,10 @@ WORS2:		DD	EXIT
 ;		Display the sign-on message of eForth.
 
 		$COLON	2,'hi',HI
-		DD	STOIO			;initialize I/O
-;		DD	CR		
-;		D$	DOTQP,'eForth v'        ;model
-
-FOO:		DD	DOLIT, 'A', TXSTO
-		DD	DOLIT, 'B', TXSTO
-		DD	DOLIT, 'C', TXSTO
-		DD	DOLIT, 'D', TXSTO
-		DD	DOLIT, 'E', TXSTO
-		DD	DOLIT, 'F', TXSTO
-		DD	DOLIT, 'G', TXSTO
-		DD	DOLIT, 'H', TXSTO
-		DD	BYE
-		DD	CR
-
+		DD	STOIO,CR		;initialize I/O
+		D$	DOTQP,'eForth v'        ;model
+		; TODO fix version number output
 		DD	BASE,AT,HEX		;save radix
-
-		DD	CR
-		D$	DOTQP,'now the version string'
-
 		DD	VERSN,BDIGS,DIG,DIG
 		DD	DOLIT,'.',HOLD
 		DD	DIGS,EDIGS,TYPEE	;format version number
