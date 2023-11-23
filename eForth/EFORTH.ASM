@@ -182,7 +182,7 @@ entry3	equ	0000000f6h	; f6:gcall
 ; IServer I/O frames and link 0 addresses
 
 REQ_POLLKEY     EQU 31
-REQ_EXIT		EQU 35
+REQ_EXIT	EQU 35
 REQ_PUTCHAR     EQU 90
 STDOUT_STREAMID EQU 0x01
 LINK0_OUTPUT    EQU 0x80000000
@@ -307,6 +307,8 @@ rpchbuf equ	06h		; REQ_PUTCHAR requests are built up here
 ;		07h		; taken up in the RPCHBUF
 rxitbuf	equ	08h		; REQ_EXIT request literal bytes stored here
 ;		09h		; for direct sending
+rpolbuf	equ	0ah		; REQ_POLLKEY request literal bytes stored here
+;		0bh		; for direct sending
 
 ; Workspace area defined as symbols
 OUTBYTE:	DD	0
@@ -317,6 +319,7 @@ SCRATCH:	DD	0
 INBYTE:		DD	0
 RPCHBUF:	DB	6,0,REQ_PUTCHAR,0xff,0,0,0,0	; note 2 cells long
 RXITBUF:	DB	6,0,REQ_EXIT,0,0,0,0,0		; note 2 cells long
+RPOLBUF:	DB	6,0,REQ_POLLKEY,0,0,0,0,0	; note 2 cells long
 ; End of workspace
 EOW:	
 
@@ -355,9 +358,14 @@ ORG	CODEE					;start code dictionary
 ;		Return input character and true, or a false if no input.
 
 		$CODE	3,'?RX',QRX
-		ldc     LINK0_OUTPUT        ; (link0)
-		ldc     REQ_POLLKEY         ; (req_pollkey link0)
-		outbyte                     ; ()
+;		LEN-LSB LEN-MSB REQ_POLLKEY 00 00 00 00
+;		| framelength | frametype | | padding |
+;		Frame length is always 6 for a REQ_POLLKEY
+;		Send the request down the link
+		ldlp	rpolbuf		    ; (rpolbuf)
+		ldc     LINK0_OUTPUT        ; (link0 rpolbuf)
+		ldc	8		    ; (len=8 link0 rpolbuf)
+		out
 
 ;		Read IServer response
 		ldlp    inbyte              ; (&inbyte)
