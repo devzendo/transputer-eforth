@@ -727,10 +727,14 @@ BRAN1:
 		ldnl	0			; get value
 		mint				; $8000.0000
 		and				; sign bit
-		eqc	0			; true if 0 or +
-		not				; flip it
-		ldl	spx			;
-		stnl	0			;
+		cj	ZLPOS
+		ldc	-1			; true flag
+		ldl	spx
+		stnl	0			; store at tos
+		$NEXT
+ZLPOS:		ldc	0			; false flag
+		ldl	spx
+		stnl	0			; store at tos
 		$NEXT
 
 ;   AND 	( w w -- w )
@@ -778,7 +782,9 @@ BRAN1:
 		ldnl	0			; get one operand from tos
 		ldl	spx
 		ldnl	1			; get second operand from nos
-		db	023h,0f7h		; do a long sum
+
+						; (arg arg carry -- sum carry undef)
+		lsum				; do a long sum
 		ldl	spx
 		stnl	1			; store sum at nos
 		ldl	spx
