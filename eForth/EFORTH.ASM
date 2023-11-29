@@ -519,7 +519,7 @@ QRX_RDCHR1:
 		$CODE	COMPO+4,'next',DONXT
 		ldl	rp
 		ldnl	0			; fetch the index
-		db	060h,08fh		; adc -1
+		adc	-1
 		dup				; extra copy for test
 		ldl	rp
 		stnl	0			; and back to (rp)
@@ -1076,26 +1076,50 @@ MIN1:		DD	DROP,EXIT
 ;; Divide
 
 ;   UM/MOD	( udl udh u -- ur uq )
-;		Unsigned divide of a double by a single. Return mod and quotient.
+;		Unsigned divide of a double by a single. Return remainder and quotient.
 
-		$COLON	6,'UM/MOD',UMMOD
-		DD	DDUP,ULESS
-		DD	QBRAN,UMM4
-		DD	NEGAT,DOLIT,15,TOR
-UMM1:		DD	TOR,DUPP,UPLUS
-		DD	TOR,TOR,DUPP,UPLUS
-		DD	RFROM,PLUS,DUPP
-		DD	RFROM,RAT,SWAP,TOR
-		DD	UPLUS,RFROM,ORR
-		DD	QBRAN,UMM2
-		DD	TOR,DROP,DOLIT,1,PLUS,RFROM
-		DD	BRAN,UMM3
-UMM2:		DD	DROP
-UMM3:		DD	RFROM
-		DD	DONXT,UMM1
-		DD	DROP,SWAP,EXIT
-UMM4:		DD	DROP,DDROP
-		DD	DOLIT,-1,DUPP,EXIT	;overflow, return max
+		$CODE	6,'UM/MOD',UMMOD
+		; 2 0014 udl
+		; 1 0000 udh
+		; 0 0005 u
+		ldl	spx
+		ldnl	1			; get udh from nos (udh -- )
+		ldl	spx
+		ldnl	2			; get udl from tos (udl udh -- )
+		ldl	spx
+		ldnl	0			; get u from nos+1 (u udl udh -- )
+						; udh in Creg; udl in Breg; u in Areg
+		ldiv				; ( -- quotient remainder )
+		rev
+
+		ldl	spx
+		adc	4
+		stl	spx
+		ldl	spx
+		stnl	1			; quotient 4
+		ldl	spx
+		stnl	0			; remainder 0 
+
+		$NEXT
+
+;		$COLON	6,'UM/MOD',UMMOD
+;		DD	DDUP,ULESS
+;		DD	QBRAN,UMM4
+;		DD	NEGAT,DOLIT,15,TOR
+;UMM1:		DD	TOR,DUPP,UPLUS
+;		DD	TOR,TOR,DUPP,UPLUS
+;		DD	RFROM,PLUS,DUPP
+;		DD	RFROM,RAT,SWAP,TOR
+;		DD	UPLUS,RFROM,ORR
+;		DD	QBRAN,UMM2
+;		DD	TOR,DROP,DOLIT,1,PLUS,RFROM
+;		DD	BRAN,UMM3
+;UMM2:		DD	DROP
+;UMM3:		DD	RFROM
+;		DD	DONXT,UMM1
+;		DD	DROP,SWAP,EXIT
+;UMM4:		DD	DROP,DDROP
+;		DD	DOLIT,-1,DUPP,EXIT	;overflow, return max
 
 ;   M/MOD	( d n -- r q )
 ;		Signed floored divide of double by single. Return mod and quotient.
@@ -2355,7 +2379,6 @@ WORS2:		DD	EXIT
 		$COLON	2,'hi',HI
 		DD	STOIO,CR		;initialize I/O
 		D$	DOTQP,'eForth v'        ;model
-		; TODO fix version number output
 		DD	BASE,AT,HEX		;save radix
 		DD	VERSN,BDIGS,DIG,DIG
 		DD	DOLIT,'.',HOLD
@@ -2376,7 +2399,9 @@ WORS2:		DD	EXIT
 COLD1:		DD	DOLIT,UZERO,DOLIT,UPP
 		DD	DOLIT,ULAST-UZERO,CMOVE ;initialize user area
 		DD	PRESE			;initialize stack and TIB
+
 		DD	TBOOT,ATEXE		;application boot
+		DD	TDISASM
 		DD	FORTH,CNTXT,AT,DUPP	;initialize search order
 		DD	CRRNT,DSTOR,OVERT
 		DD	QUIT			;start interpretation
