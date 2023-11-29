@@ -1090,15 +1090,14 @@ MIN1:		DD	DROP,EXIT
 		ldnl	0			; get u from nos+1 (u udl udh -- )
 						; udh in Creg; udl in Breg; u in Areg
 		ldiv				; ( -- quotient remainder )
-		rev
 
 		ldl	spx
 		adc	4
 		stl	spx
 		ldl	spx
-		stnl	1			; quotient 4
+		stnl	0			; quotient 4
 		ldl	spx
-		stnl	0			; remainder 0 
+		stnl	1			; remainder 0 
 
 		$NEXT
 
