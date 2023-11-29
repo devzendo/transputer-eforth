@@ -2400,9 +2400,9 @@ COLD1:		DD	DOLIT,UZERO,DOLIT,UPP
 		DD	PRESE			;initialize stack and TIB
 
 		DD	TBOOT,ATEXE		;application boot
-		DD	TDISASM
 		DD	FORTH,CNTXT,AT,DUPP	;initialize search order
 		DD	CRRNT,DSTOR,OVERT
+		DD	TDISASM
 		DD	QUIT			;start interpretation
 		DD	BRAN,COLD1		;just in case
 
