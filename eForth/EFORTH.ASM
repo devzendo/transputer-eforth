@@ -295,14 +295,14 @@ UZERO:		DD	4 DUP (0)		;reserved
 ULAST:
 
 ; Transputer initial workspace.
-; Workspace local indices...
+; Workspace local cell indices...
 ; Workspace[0] cannot be used; outbyte uses it.
 ; eForth VM registers
 spx	equ	01h
 ip	equ	02h
 rp	equ	03h
 scratch equ	04h
-inbyte	equ	05h		; single byte responses from the IServer are read here
+inbyte	equ	05h		; single-cell responses from the IServer are read here
 rpchbuf equ	06h		; REQ_PUTCHAR requests are built up here
 ;		07h		; taken up in the RPCHBUF
 rxitbuf	equ	08h		; REQ_EXIT request literal bytes stored here
@@ -324,7 +324,7 @@ RPOLBUF:	DB	6,0,REQ_POLLKEY,0,0,0,0,0	; note 2 cells long
 EOW:	
 
 ; There are only 64 cells between COLDD and here - if more workspace area is used
-; watch out for collisions.. Currently EOW is 8000020C and CODEE is 80000220.
+; watch out for collisions.. Currently EOW is 80000214 and CODEE is 80000220.
 
 ORG	CODEE					;start code dictionary
 
@@ -370,10 +370,11 @@ ORG	CODEE					;start code dictionary
 ;		Read IServer response
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_INPUT	    ; (link0 &inbyte)
-		ldc     1                   ; (len=1 link0 &inbyte)
-		in
-		ldl	inbyte		    ; (inbyte)
-		cj	QRX_RDCHR1
+		ldc     4                   ; (len=4 link0 &inbyte)
+		in	                    ; (lsb msb result pad)
+		ldlp    inbyte              ; (&inbyte)
+		ldnl	2		    ; (result)
+		cj	QRX_RDCHR1	    ; RES_SUCCESS==0
 
 ;		No character is available, return false.
 		ldc	0		    ; push a false
@@ -383,10 +384,7 @@ ORG	CODEE					;start code dictionary
 ;		A character is available, read it and return true.
 QRX_RDCHR1:
 		ldlp    inbyte              ; (&inbyte)
-		ldc     LINK0_INPUT         ; (link0 &inbyte)
-		ldc     1                   ; (len=1 link0 &inbyte)
-		in
-		ldl	inbyte      	    ; (inbyte)
+		ldnl	3		    ; (char)
  		pushx			    ; push char to tos
 		ldc	-1
 		pushx			    ; true on top of it
@@ -415,7 +413,7 @@ QRX_RDCHR1:
 ;		Read (and ignore) IServer response
 		ldlp    inbyte              ; (&inbyte)
 		ldc     LINK0_INPUT	    ; (link0 &inbyte)
-		ldc     1                   ; (len=1 link0 &inbyte)
+		ldc     4                   ; (len=4 link0 &inbyte)
 		in
 
 		$NEXT
@@ -2402,7 +2400,6 @@ COLD1:		DD	DOLIT,UZERO,DOLIT,UPP
 		DD	TBOOT,ATEXE		;application boot
 		DD	FORTH,CNTXT,AT,DUPP	;initialize search order
 		DD	CRRNT,DSTOR,OVERT
-		DD	TDISASM
 		DD	QUIT			;start interpretation
 		DD	BRAN,COLD1		;just in case
 
