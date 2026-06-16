@@ -85,7 +85,8 @@ CALLL		EQU	0h	; was 0E890H NOP CALL opcodes
 
 ;; Memory allocation	0//code>--/../--<name//-----<sp//tib>--<rp//up>--em
 
-EM		EQU	0x80400000              ;top of memory (4MB, the default Parachute RAM size)
+;EM		EQU	0x80400000              ;top of memory (4MB, the default Parachute RAM size)
+EM		EQU	0x8000FFFF              ;64 kb for now
 COLDD		EQU	Boot2Start	        ;cold start vector
 
 US		EQU	64*CELLL		;user area size in cells
