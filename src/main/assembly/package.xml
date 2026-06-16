@@ -1,0 +1,30 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>eforth</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <baseDirectory>/</baseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/eForth</directory>
+            <includes>
+                <include>EFORTH.ASM</include>
+                <include>EFORTH.BIN</include>
+                <include>EFORTH.LST</include>
+                <include>EFORTH.SYM</include>
+            </includes>
+            <outputDirectory>eForth</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <files>
+        <file>
+            <source>${project.basedir}/README.md</source>
+            <outputDirectory>./</outputDirectory>
+            <destName>README-transputer-eforth.md</destName>
+        </file>
+    </files>
+</assembly>

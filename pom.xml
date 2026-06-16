@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.devzendo</groupId>
+    <artifactId>transputer-eforth</artifactId>
+    <version>1.2-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Transputer eForth</name>
+    <description>This is a port of eForth to the Parachute 32-bit Inmos T414/T800/T801/T805 Transputer emulator.
+        (Public Domain) 2018-2026 Matt Gumbley, DevZendo.org
+    </description>
+    <url>https://devzendo.github.io/parachute</url>
+
+    <organization>
+        <name>DevZendo.org</name>
+        <url>http://devzendo.org/</url>
+    </organization>
+
+    <scm>
+        <url>https://github.com/devzendo/transputer-eforth.git</url>
+        <connection>scm:git:https://github.com/devzendo/transputer-eforth.git</connection>
+        <developerConnection>scm:git:git@github.com:devzendo/transputer-eforth.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>matt.gumbley</id>
+            <name>Matt Gumbley</name>
+            <email>matt.gumbley@devzendo.org</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>maven-snapshots</id>
+            <url>http://nexus.build.devzendo.org:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>devzendo</id>
+            <url>http://nexus.build.devzendo.org:8081/repository/devzendo/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>make</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>make</executable>
+                            <arguments>
+                                <argument>EFORTH.BIN</argument>
+                            </arguments>
+                            <workingDirectory>eForth</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>make</executable>
+                            <arguments>
+                                <argument>clean</argument>
+                            </arguments>
+                            <workingDirectory>eForth</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/package.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <executable>gpg2</executable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>devzendo</serverId>
+                    <nexusUrl>http://nexus.build.devzendo.org:8081/nexus/</nexusUrl>
+                    <skipStagingRepositoryClose>true</skipStagingRepositoryClose> <!-- because we have many platforms to deploy from -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
