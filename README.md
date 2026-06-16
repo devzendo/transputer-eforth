@@ -4,7 +4,7 @@ This repository contains eForth, ported to the Transputer by Bob Barr, with
 further changes to port it to the <a href="https://devzendo.github.io/parachute/">Parachute project's</a>
 Transputer emulator.
 
-This port (PD) 2018-2023 Matt J. Gumbley
+This port (PD) 2018-2026 Matt J. Gumbley
 matt.gumbley@devzendo.org
 @M0CUV@mastodon.radio
 
@@ -13,7 +13,9 @@ http://devzendo.github.io/parachute
 
 Status
 ------
-In progress, August 2023. Making into a link-bootable, not ROM-based binary, and modifying I/O
+In progress, June 2026.
+
+Making into a link-bootable, not ROM-based binary, and modifying I/O
 words to use the Parachute IServer. Fixing inner interpreter bugs to get to the
 end of cold boot.
 
