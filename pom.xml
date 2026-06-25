@@ -22,7 +22,7 @@
     <scm>
         <url>https://github.com/devzendo/transputer-eforth.git</url>
         <connection>scm:git:https://github.com/devzendo/transputer-eforth.git</connection>
-        <developerConnection>scm:git:git@github.com:devzendo/transputer-eforth.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/devzendo/transputer-eforth.git</developerConnection>
     </scm>
 
     <developers>
