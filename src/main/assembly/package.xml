@@ -12,12 +12,18 @@
         <fileSet>
             <directory>${project.basedir}/eForth</directory>
             <includes>
-                <include>EFORTH.ASM</include>
                 <include>EFORTH.BIN</include>
+            </includes>
+            <outputDirectory>bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/eForth</directory>
+            <includes>
+                <include>EFORTH.ASM</include>
                 <include>EFORTH.LST</include>
                 <include>EFORTH.SYM</include>
             </includes>
-            <outputDirectory>eForth</outputDirectory>
+            <outputDirectory>lib/eForth</outputDirectory>
         </fileSet>
     </fileSets>
     <files>
